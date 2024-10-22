@@ -8,12 +8,13 @@ import { getContract, prepareContractCall } from "thirdweb";
 import { sepolia } from "thirdweb/chains";
 import { toWei } from "thirdweb/utils";
 import { client } from "./client";
-import house from '../public/TXB.png';
+import Confetti from 'react-confetti';
 
 export default function Home() {
   const [addresses, setAddresses] = useState("");
   const [amt, setAmt] = useState("");
   const activeAccount = useActiveAccount();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { mutateAsync: sendTransaction } = useSendTransaction();
 
@@ -25,6 +26,10 @@ export default function Home() {
     abi: AirdropABI.abi,           
   });
 
+  const openInNewTab = (url) => {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
+  }
 
   const handleClick = async () => {
     try {
@@ -53,22 +58,40 @@ export default function Home() {
       });
 
       const result = await sendTransaction(transaction);
-  
+
+      setIsSubmitted(true); 
+
       console.log("Transaction sent:", result);
+      setTimeout(() => {
+        openInNewTab('https://sepolia.etherscan.io/tx/'+result.transactionHash); 
+      }, 9000);
     } catch (error) {
       console.error("Error sending transaction:", error);
       alert("Transaction failed. Check the console for details.");
     }
   };
 
+
   return (
-    <main className="flex flex-col items-center p-5 m-5 space-y-8">
-      <div className="flex justify-center">
-        <h1>Welcome to our Airdrop :)</h1>
-      </div>
-      <div className="flex justify-center">
-        <img src="TXB.png"></img>
-      </div>
+    <main className="flex flex-col items-center p-5 m-5 space-y-8" id='my-app'>
+      {isSubmitted ? (
+        <>
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight + 320}
+          />
+          <img src="https://tr.rbxcdn.com/6e5099d0fd13f1777a6629ee3012dcc4/768/432/Image/Webp" width="630" height="340" />
+        </>
+      ) : (
+        <>
+          <div className="flex justify-center">
+            <h1 id="welcom">Welcome to our Airdrop :)</h1>
+          </div>
+          <div className="flex justify-center">
+            <img id="txb" src="https://cdn.prod.website-files.com/63c7343f913714b9ef4ea297/63c7343f9137145e434ea334_txblogo.png" height="200" width="200" />
+          </div>
+        </>
+      )}
       <div className="flex justify-center">
         <ConnectButton
           client={client}
